@@ -7,4 +7,6 @@
 
 (def quest "databasename")
 
+(def cdb "zencode-alfa")
+
 

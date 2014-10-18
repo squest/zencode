@@ -1,7 +1,8 @@
 (ns zencode.routes
 	(:require [compojure.core :refer :all]
-						[zencode.layout :as page]
 						[zencode.backoffice.pages :as backoffice]
+						[zencode.view.home :as homepage]
+						[zencode.controller.home :as homectrl]
 						[noir.session :as session]
 						[noir.response :as resp]))
 
@@ -15,7 +16,30 @@
 
 (defroutes home
 					 (GET "/" req
-								"Woi kosong woi"))
+								(homepage/home ""))
+					 (GET "/login" req
+								(homepage/userform :login))
+					 (POST "/login-act" req
+								 (let [{:keys [params]} req
+											 {:keys [username password]} params]
+									 (if (homectrl/valid-user? {:username username
+																						  :password password})
+										 (do (session/put! :username username)
+												 (resp/redirect "/"))
+										 (resp/redirect "/login"))))
+					 (GET "/logout" req
+								(do (session/clear!)
+										(resp/redirect "/")))
+					 (GET "/signup" req
+								(homepage/userform :signup))
+					 (POST "/signup-act" req
+								 (let [{:keys [params]} req
+											 {:keys [username password]} params]
+									 (if (homectrl/signup {:username username
+																				 :password password})
+										 (do (session/put! :username username)
+												 (resp/redirect "/"))
+										 (resp/redirect "/signup")))))
 
 (def backoffice
 	(context "/backoffice" req
